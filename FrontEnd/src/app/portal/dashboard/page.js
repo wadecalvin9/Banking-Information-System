@@ -17,14 +17,14 @@ export default function PortalDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Good morning, Alice 👋</h1>
-        <p className="text-slate-500 text-sm mt-1">Here's your financial overview for today.</p>
+        <h1 className="text-2xl font-bold text-slate-800">Good morning, Alice</h1>
+        <p className="text-slate-500 text-sm mt-1">Here&apos;s your financial overview for today.</p>
       </div>
 
       {/* Account Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {accounts.map((acc) => (
-          <div key={acc.id} className="relative bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 text-white overflow-hidden shadow-lg">
+          <div key={acc.id} className="relative bg-blue-700 rounded-2xl p-6 text-white overflow-hidden shadow-lg">
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
             <p className="text-blue-200 text-xs font-medium uppercase tracking-wide">{acc.type} Account</p>
@@ -47,14 +47,14 @@ export default function PortalDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Send Money", icon: "➤", href: "/portal/transfer" },
-          { label: "My Accounts", icon: "🏦", href: "/portal/accounts" },
-          { label: "Transactions", icon: "↔", href: "/portal/transactions" },
-          { label: "Profile", icon: "👤", href: "/portal/profile" },
+          { label: "Send Money", icon: <SendSVG />, href: "/portal/transfer" },
+          { label: "My Accounts", icon: <LandmarkSVG />, href: "/portal/accounts" },
+          { label: "Transactions", icon: <ArrowsSVG />, href: "/portal/transactions" },
+          { label: "Profile", icon: <UserSVG />, href: "/portal/profile" },
         ].map((a) => (
           <Link key={a.label} href={a.href}
             className="bg-white rounded-xl p-4 flex flex-col items-center gap-2 shadow-sm border border-slate-100 hover:shadow-md hover:border-blue-100 transition-all">
-            <span className="text-2xl">{a.icon}</span>
+            <span className="text-blue-600 flex items-center justify-center">{a.icon}</span>
             <span className="text-xs font-medium text-slate-600">{a.label}</span>
           </Link>
         ))}
@@ -84,5 +84,45 @@ export default function PortalDashboard() {
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Inline SVG icons ── */
+function SendSVG() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13" />
+      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+    </svg>
+  );
+}
+function LandmarkSVG() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="22" x2="21" y2="22" />
+      <line x1="6" y1="18" x2="6" y2="11" />
+      <line x1="10" y1="18" x2="10" y2="11" />
+      <line x1="14" y1="18" x2="14" y2="11" />
+      <line x1="18" y1="18" x2="18" y2="11" />
+      <polygon points="12 2 20 7 4 7" />
+    </svg>
+  );
+}
+function ArrowsSVG() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="17 1 21 5 17 9" />
+      <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+      <polyline points="7 23 3 19 7 15" />
+      <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+    </svg>
+  );
+}
+function UserSVG() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
   );
 }

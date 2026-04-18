@@ -74,11 +74,30 @@ export default function PortalTransactionsPage() {
         <div className="px-6 py-3 border-t border-slate-100 flex items-center justify-between text-sm text-slate-400">
           <span>Showing 7 of 42 transactions</span>
           <div className="flex gap-2">
-            <button className="px-3 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">← Prev</button>
-            <button className="px-3 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">Next →</button>
+            <button className="px-3 py-1.5 flex items-center gap-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600"><ArrowLeftSVG /> Prev</button>
+            <button className="px-3 py-1.5 flex items-center gap-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">Next <ArrowRightSVG /></button>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Inline SVG icons ── */
+function ArrowLeftSVG() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
+}
+
+function ArrowRightSVG() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
   );
 }

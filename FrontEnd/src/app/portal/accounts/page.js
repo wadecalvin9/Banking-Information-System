@@ -6,9 +6,9 @@ const accounts = [
 ];
 
 const typeColors = {
-  Savings: "from-blue-500 to-blue-700",
-  Current: "from-purple-500 to-purple-700",
-  "Fixed Deposit": "from-amber-500 to-amber-700",
+  Savings: "bg-blue-600",
+  Current: "bg-slate-700",
+  "Fixed Deposit": "bg-blue-800",
 };
 
 export default function PortalAccountsPage() {
@@ -22,7 +22,7 @@ export default function PortalAccountsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {accounts.map((acc) => (
           <div key={acc.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className={`bg-gradient-to-r ${typeColors[acc.type]} p-5 text-white`}>
+            <div className={`${typeColors[acc.type]} p-5 text-white`}>
               <p className="text-xs font-medium uppercase tracking-wide opacity-80">{acc.type} Account</p>
               <p className="text-3xl font-bold mt-1">{acc.balance}</p>
               <p className="text-sm opacity-70 mt-1 font-mono">{acc.id}</p>

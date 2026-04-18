@@ -15,7 +15,7 @@ const statusStyle = {
 
 const typeStyle = {
   Savings: "bg-blue-50 text-blue-600",
-  Current: "bg-purple-50 text-purple-600",
+  Current: "bg-slate-100 text-slate-700",
   "Fixed Deposit": "bg-amber-50 text-amber-600",
 };
 
@@ -62,17 +62,17 @@ export default function AccountsPage() {
             <tbody className="divide-y divide-slate-50">
               {accounts.map((acc) => (
                 <tr key={acc.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-3.5 font-mono text-slate-500">{acc.id}</td>
-                  <td className="px-6 py-3.5 font-medium text-slate-700">{acc.owner}</td>
-                  <td className="px-6 py-3.5">
+                  <td className="px-6 py-3.5 font-mono text-slate-500 whitespace-nowrap">{acc.id}</td>
+                  <td className="px-6 py-3.5 font-medium text-slate-700 whitespace-nowrap">{acc.owner}</td>
+                  <td className="px-6 py-3.5 whitespace-nowrap">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeStyle[acc.type]}`}>{acc.type}</span>
                   </td>
-                  <td className="px-6 py-3.5 font-semibold text-slate-700">{acc.balance}</td>
-                  <td className="px-6 py-3.5 text-slate-400">{acc.opened}</td>
-                  <td className="px-6 py-3.5">
+                  <td className="px-6 py-3.5 font-semibold text-slate-700 whitespace-nowrap">{acc.balance}</td>
+                  <td className="px-6 py-3.5 text-slate-400 whitespace-nowrap">{acc.opened}</td>
+                  <td className="px-6 py-3.5 whitespace-nowrap">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle[acc.status]}`}>{acc.status}</span>
                   </td>
-                  <td className="px-6 py-3.5">
+                  <td className="px-6 py-3.5 whitespace-nowrap">
                     <button className="text-blue-600 hover:underline text-xs mr-3">View</button>
                     <button className="text-slate-400 hover:text-red-500 text-xs">Suspend</button>
                   </td>

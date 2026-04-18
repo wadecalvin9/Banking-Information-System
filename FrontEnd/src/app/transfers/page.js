@@ -29,8 +29,8 @@ export default function TransfersPage() {
           <h2 className="font-semibold text-slate-800 mb-5">New Transfer</h2>
 
           {submitted && (
-            <div className="mb-4 bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg">
-              ✓ Transfer initiated successfully! Awaiting processing.
+            <div className="mb-4 bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg flex items-center gap-2">
+              <CheckSVG /> Transfer initiated successfully! Awaiting processing.
             </div>
           )}
 
@@ -117,7 +117,7 @@ export default function TransfersPage() {
             {recentTransfers.map((t) => (
               <div key={t.id} className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-100">
                 <div>
-                  <p className="text-sm font-medium text-slate-700">{t.from} → {t.to}</p>
+                  <p className="text-sm font-medium text-slate-700 flex items-center gap-1.5">{t.from} <ArrowRightSVG /> {t.to}</p>
                   <p className="text-xs text-slate-400 mt-0.5">{t.id} · {t.date}</p>
                 </div>
                 <div className="text-right">
@@ -141,5 +141,23 @@ export default function TransfersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Inline SVG icons ── */
+function CheckSVG() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function ArrowRightSVG() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
   );
 }

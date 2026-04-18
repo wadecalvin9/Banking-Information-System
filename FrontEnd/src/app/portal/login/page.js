@@ -13,10 +13,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">🏛</div>
+          <div className="flex justify-center text-blue-500 mb-4">
+            <LandmarkSVG />
+          </div>
           <h1 className="text-3xl font-bold text-white">NexaBank</h1>
           <p className="text-slate-400 mt-1">Sign in to your account</p>
         </div>
@@ -63,9 +65,34 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center mt-6">
-          <Link href="/" className="text-slate-400 text-sm hover:text-white transition-colors">← Back to home</Link>
+          <Link href="/" className="text-slate-400 text-sm flex items-center justify-center gap-2 hover:text-white transition-colors">
+            <ArrowLeftSVG /> Back to home
+          </Link>
         </p>
       </div>
     </div>
+  );
+}
+
+/* ── Inline SVG icons ── */
+function LandmarkSVG() {
+  return (
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="22" x2="21" y2="22" />
+      <line x1="6" y1="18" x2="6" y2="11" />
+      <line x1="10" y1="18" x2="10" y2="11" />
+      <line x1="14" y1="18" x2="14" y2="11" />
+      <line x1="18" y1="18" x2="18" y2="11" />
+      <polygon points="12 2 20 7 4 7" />
+    </svg>
+  );
+}
+
+function ArrowLeftSVG() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
   );
 }

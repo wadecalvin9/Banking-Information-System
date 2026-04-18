@@ -44,14 +44,14 @@ export default function TransactionsPage() {
             <tbody className="divide-y divide-slate-50">
               {transactions.map((tx) => (
                 <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-3.5 font-mono text-slate-500">{tx.id}</td>
-                  <td className="px-6 py-3.5 font-mono text-slate-400 text-xs">{tx.account}</td>
-                  <td className="px-6 py-3.5 font-medium text-slate-700">{tx.customer}</td>
-                  <td className="px-6 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeStyle[tx.type]}`}>{tx.type}</span></td>
-                  <td className={`px-6 py-3.5 font-semibold ${tx.amount.startsWith("+") ? "text-green-600" : "text-red-500"}`}>{tx.amount}</td>
-                  <td className="px-6 py-3.5 text-slate-400 text-xs">{tx.date}</td>
-                  <td className="px-6 py-3.5 font-mono text-slate-400 text-xs">{tx.ref}</td>
-                  <td className="px-6 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle[tx.status]}`}>{tx.status}</span></td>
+                  <td className="px-6 py-3.5 font-mono text-slate-500 whitespace-nowrap">{tx.id}</td>
+                  <td className="px-6 py-3.5 font-mono text-slate-400 text-xs whitespace-nowrap">{tx.account}</td>
+                  <td className="px-6 py-3.5 font-medium text-slate-700 whitespace-nowrap">{tx.customer}</td>
+                  <td className="px-6 py-3.5 whitespace-nowrap"><span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeStyle[tx.type]}`}>{tx.type}</span></td>
+                  <td className={`px-6 py-3.5 font-semibold whitespace-nowrap ${tx.amount.startsWith("+") ? "text-green-600" : "text-red-500"}`}>{tx.amount}</td>
+                  <td className="px-6 py-3.5 text-slate-400 text-xs whitespace-nowrap">{tx.date}</td>
+                  <td className="px-6 py-3.5 font-mono text-slate-400 text-xs whitespace-nowrap">{tx.ref}</td>
+                  <td className="px-6 py-3.5 whitespace-nowrap"><span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle[tx.status]}`}>{tx.status}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -60,11 +60,30 @@ export default function TransactionsPage() {
         <div className="px-6 py-3 border-t border-slate-100 flex items-center justify-between text-sm text-slate-400">
           <span>Showing 7 of 284 transactions</span>
           <div className="flex gap-2">
-            <button className="px-3 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">← Prev</button>
-            <button className="px-3 py-1 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">Next →</button>
+            <button className="px-3 py-1.5 flex items-center gap-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600"><ArrowLeftSVG /> Prev</button>
+            <button className="px-3 py-1.5 flex items-center gap-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">Next <ArrowRightSVG /></button>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Inline SVG icons ── */
+function ArrowLeftSVG() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12" />
+      <polyline points="12 19 5 12 12 5" />
+    </svg>
+  );
+}
+
+function ArrowRightSVG() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" />
+      <polyline points="12 5 19 12 12 19" />
+    </svg>
   );
 }

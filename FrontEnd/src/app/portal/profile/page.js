@@ -39,8 +39,8 @@ export default function PortalProfilePage() {
       </div>
 
       {saved && (
-        <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg">
-          ✓ Profile updated successfully.
+        <div className="bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg flex items-center gap-2">
+          <CheckSVG /> Profile updated successfully.
         </div>
       )}
 
@@ -105,5 +105,14 @@ export default function PortalProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Inline SVG icons ── */
+function CheckSVG() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
   );
 }

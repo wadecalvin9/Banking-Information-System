@@ -38,19 +38,19 @@ export default function CustomersPage() {
             <tbody className="divide-y divide-slate-50">
               {customers.map((c) => (
                 <tr key={c.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-3.5 font-mono text-slate-500">{c.id}</td>
-                  <td className="px-6 py-3.5">
+                  <td className="px-6 py-3.5 font-mono text-slate-500 whitespace-nowrap">{c.id}</td>
+                  <td className="px-6 py-3.5 whitespace-nowrap">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">{c.name[0]}</div>
+                      <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">{c.name[0]}</div>
                       <span className="font-medium text-slate-700">{c.name}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-3.5 text-slate-500">{c.email}</td>
-                  <td className="px-6 py-3.5 text-slate-500">{c.phone}</td>
-                  <td className="px-6 py-3.5 text-center text-slate-600 font-medium">{c.accounts}</td>
-                  <td className="px-6 py-3.5 text-slate-400">{c.joined}</td>
-                  <td className="px-6 py-3.5"><span className={`px-2.5 py-1 rounded-full text-xs font-medium ${kycStyle[c.kyc]}`}>{c.kyc}</span></td>
-                  <td className="px-6 py-3.5">
+                  <td className="px-6 py-3.5 text-slate-500 whitespace-nowrap">{c.email}</td>
+                  <td className="px-6 py-3.5 text-slate-500 whitespace-nowrap">{c.phone}</td>
+                  <td className="px-6 py-3.5 text-center text-slate-600 font-medium whitespace-nowrap">{c.accounts}</td>
+                  <td className="px-6 py-3.5 text-slate-400 whitespace-nowrap">{c.joined}</td>
+                  <td className="px-6 py-3.5 whitespace-nowrap"><span className={`px-2.5 py-1 rounded-full text-xs font-medium ${kycStyle[c.kyc]}`}>{c.kyc}</span></td>
+                  <td className="px-6 py-3.5 whitespace-nowrap">
                     <button className="text-blue-600 hover:underline text-xs mr-3">View</button>
                     <button className="text-slate-400 hover:text-slate-600 text-xs">Edit</button>
                   </td>

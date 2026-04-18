@@ -1,17 +1,18 @@
-import { Geist } from "next/font/google";
 import "./globals.css";
 
-const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-
 export const metadata = {
-  title: "NexaBank",
-  description: "Banking Information System",
+  title: "NexaBank — Secure Online Banking",
+  description: "NexaBank — Modern, secure banking for everyone. Manage accounts, transfers, and more.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} antialiased`}>{children}</body>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
+      <body>{children}</body>
     </html>
   );
 }
