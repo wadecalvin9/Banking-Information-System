@@ -4,12 +4,30 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ accountNumber: "", password: "" });
+  const [form, setForm] = useState({ accountNumber: "", pin: "" });
+  const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    router.push("/portal/dashboard");
+    setError("");
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify({ name: data.name, email: data.email }));
+        router.push("/portal/dashboard");
+      } else {
+        setError("Invalid Account Number or PIN");
+      }
+    } catch (err) {
+      setError("Server connection failed");
+    }
   };
 
   return (
@@ -24,6 +42,11 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-100 text-red-600 text-sm px-4 py-2 rounded-lg text-center">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">Account Number</label>
@@ -37,13 +60,14 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">Password</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">Account PIN</label>
               <input
                 type="password"
                 required
-                placeholder="••••••••"
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                maxLength={6}
+                placeholder="••••••"
+                value={form.pin}
+                onChange={(e) => setForm({ ...form, pin: e.target.value })}
                 className="w-full border border-slate-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

@@ -1,4 +1,5 @@
 "use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -60,6 +61,13 @@ const links = [
 
 export default function PortalNav() {
   const pathname = usePathname();
+  const [user, setUser] = useState({ name: "User", email: "" });
+
+  useEffect(() => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    if (storedUser.name) setUser(storedUser);
+  }, []);
+
   return (
     <>
       <header className="bg-white border-b border-[#e5e9f2] sticky top-0 z-50 shadow-sm">
@@ -112,12 +120,12 @@ export default function PortalNav() {
 
         {/* User */}
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center text-[12.5px] font-bold text-white">
-            A
+          <div className="w-8 h-8 rounded-lg bg-[#1447e6] flex items-center justify-center text-[12.5px] font-bold text-white">
+            {user.name[0]}
           </div>
           <div className="hidden sm:block">
-            <p className="text-[13px] font-semibold text-[#0f1729] leading-tight">Alice Mwangi</p>
-            <p className="text-[11px] text-[#9aa3b5]">ACC-1001</p>
+            <p className="text-[13px] font-semibold text-[#0f1729] leading-tight">{user.name}</p>
+            <p className="text-[11px] text-[#9aa3b5]">{user.email}</p>
           </div>
           <Link href="/" className="ml-1 sm:ml-2 flex items-center p-2 sm:px-2.5 sm:py-1.5 rounded-lg text-[#9aa3b5] border border-[#e5e9f2] gap-1.5 transition-all hover:bg-slate-50" title="Sign out">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

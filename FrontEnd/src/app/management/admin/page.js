@@ -1,21 +1,54 @@
+"use client";
+import { useState, useEffect } from "react";
 import StatCard from "@/components/StatCard";
 import Link from "next/link";
-
-const recentTransactions = [
-  { id: "TXN-001", customer: "Alice Mwangi", type: "Deposit", amount: "+KES 45,000", date: "2025-07-10", status: "Completed" },
-  { id: "TXN-002", customer: "Brian Otieno", type: "Withdrawal", amount: "-KES 12,500", date: "2025-07-10", status: "Completed" },
-  { id: "TXN-003", customer: "Carol Njeri", type: "Transfer", amount: "-KES 8,000", date: "2025-07-09", status: "Pending" },
-  { id: "TXN-004", customer: "David Kamau", type: "Deposit", amount: "+KES 120,000", date: "2025-07-09", status: "Completed" },
-  { id: "TXN-005", customer: "Eve Wanjiku", type: "Withdrawal", amount: "-KES 3,200", date: "2025-07-08", status: "Failed" },
-];
-
-const statusStyle = {
-  Completed: "bg-green-100 text-green-700",
-  Pending: "bg-amber-100 text-amber-700",
-  Failed: "bg-red-100 text-red-700",
-};
+import { useRouter } from "next/navigation";
+import { authFetch } from "@/utils/api";
 
 export default function AdminDashboard() {
+  const [data, setData] = useState({ customers: [], accounts: [], transactions: [] });
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/management/login");
+      return;
+    }
+
+    async function fetchData() {
+      try {
+        const [cusRes, accRes, txRes] = await Promise.all([
+          authFetch("http://localhost:8080/api/customers"),
+          authFetch("http://localhost:8080/api/accounts"),
+          authFetch("http://localhost:8080/api/transactions")
+        ]);
+        const customers = await cusRes.json();
+        const accounts = await accRes.json();
+        const transactions = await txRes.json();
+        setData({ customers, accounts, transactions });
+      } catch (err) {
+        console.error("Failed to fetch admin data", err);
+        router.push("/management/login");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [router]);
+
+  if (loading) return <div className="p-8 text-center text-slate-500">Loading admin overview...</div>;
+
+  const { customers, accounts, transactions } = data;
+  const recentTransactions = transactions.slice(0, 5);
+
+  const statusStyle = {
+    Completed: "bg-green-100 text-green-700",
+    Pending: "bg-amber-100 text-amber-700",
+    Failed: "bg-red-100 text-red-700",
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -23,15 +56,15 @@ export default function AdminDashboard() {
         <p className="text-slate-500 text-sm mt-1">Welcome back, Admin. Here&apos;s what&apos;s happening today.</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard title="Total Customers" value="3,842" sub="+12 this week" icon={<UsersSVG />} color="blue" />
-        <StatCard title="Active Accounts" value="5,210" sub="98.2% healthy" icon={<LandmarkSVG />} color="green" />
-        <StatCard title="Today's Transactions" value="284" sub="KES 4.2M volume" icon={<ArrowsSVG />} color="amber" />
-        <StatCard title="Pending Approvals" value="17" sub="Requires action" icon={<ClockSVG />} color="red" />
+        <StatCard title="Total Customers" value={customers.length.toLocaleString()} sub="+12 this week" icon={<UsersSVG />} color="blue" />
+        <StatCard title="Active Accounts" value={accounts.length.toLocaleString()} sub="98.2% healthy" icon={<LandmarkSVG />} color="green" />
+        <StatCard title="Total Transactions" value={transactions.length.toLocaleString()} sub="Requires attention" icon={<ArrowsSVG />} color="amber" />
+        <StatCard title="Pending Approvals" value="0" sub="All caught up" icon={<ClockSVG />} color="red" />
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h2 className="font-semibold text-slate-800">Recent Transactions</h2>
-          <Link href="/admin/transactions" className="text-sm text-blue-600 hover:underline">View all</Link>
+          <Link href="/management/admin/transactions" className="text-sm text-blue-600 hover:underline">View all</Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -48,13 +81,15 @@ export default function AdminDashboard() {
             <tbody className="divide-y divide-slate-50">
               {recentTransactions.map((tx) => (
                 <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-3.5 font-mono text-slate-500 whitespace-nowrap">{tx.id}</td>
-                  <td className="px-6 py-3.5 font-medium text-slate-700 whitespace-nowrap">{tx.customer}</td>
+                  <td className="px-6 py-3.5 font-mono text-slate-500 whitespace-nowrap">TX-00{tx.id}</td>
+                  <td className="px-6 py-3.5 font-medium text-slate-700 whitespace-nowrap">{tx.from_account?.customer?.name || tx.to_account?.customer?.name || "-"}</td>
                   <td className="px-6 py-3.5 text-slate-500 whitespace-nowrap">{tx.type}</td>
-                  <td className={`px-6 py-3.5 font-semibold whitespace-nowrap ${tx.amount.startsWith("+") ? "text-green-600" : "text-red-500"}`}>{tx.amount}</td>
-                  <td className="px-6 py-3.5 text-slate-400 whitespace-nowrap">{tx.date}</td>
+                  <td className={`px-6 py-3.5 font-semibold whitespace-nowrap ${tx.type === 'Deposit' ? "text-green-600" : "text-red-500"}`}>
+                    {tx.type === 'Deposit' ? "+" : "-"} KES {tx.amount?.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-3.5 text-slate-400 whitespace-nowrap">{tx.date || "Just now"}</td>
                   <td className="px-6 py-3.5 whitespace-nowrap">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle[tx.status]}`}>{tx.status}</span>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle['Completed']}`}>Completed</span>
                   </td>
                 </tr>
               ))}

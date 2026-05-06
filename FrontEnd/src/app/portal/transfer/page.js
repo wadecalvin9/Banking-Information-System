@@ -1,14 +1,56 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { authFetch } from "@/utils/api";
 
 export default function PortalTransferPage() {
   const [form, setForm] = useState({ fromAccount: "", toAccount: "", amount: "", description: "", pin: "" });
   const [step, setStep] = useState(1); // 1=form, 2=confirm, 3=success
+  const [accounts, setAccounts] = useState([]);
+  const [txnId, setTxnId] = useState(null);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    async function fetchAccounts() {
+      try {
+        const res = await authFetch("http://localhost:8080/api/accounts");
+        const data = await res.json();
+        setAccounts(data);
+      } catch (err) {
+        console.error("Error fetching accounts:", err);
+      }
+    }
+    fetchAccounts();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (step === 1) { setStep(2); return; }
-    if (step === 2) { setStep(3); }
+    if (step === 2) { 
+      try {
+        const fromId = String(form.fromAccount).replace(/[^0-9]/g, "");
+        const toId = String(form.toAccount).replace(/[^0-9]/g, "");
+
+        const res = await authFetch("http://localhost:8080/api/transfer", {
+          method: "POST",
+          body: JSON.stringify({
+            from_account: fromId ? Number(fromId) : null,
+            to_account: toId ? Number(toId) : null,
+            amount: Number(form.amount),
+            type: "Transfer",
+            pin: form.pin
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setTxnId(data.id);
+          setStep(3);
+        } else {
+          alert("Transfer failed");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error initiating transfer");
+      }
+    }
   };
 
   if (step === 3) {
@@ -19,7 +61,7 @@ export default function PortalTransferPage() {
         </div>
         <h2 className="text-2xl font-bold text-slate-800">Transfer Successful!</h2>
         <p className="text-slate-500 mt-2 text-sm">Your transfer of <span className="font-semibold text-slate-700">KES {form.amount}</span> has been initiated.</p>
-        <p className="text-xs text-slate-400 mt-1">Reference: TRF{Date.now()}</p>
+        <p className="text-xs text-slate-400 mt-1">Reference: TRF-00{txnId || 'PENDING'}</p>
         <div className="flex gap-3 justify-center mt-8">
           <button onClick={() => { setStep(1); setForm({ fromAccount: "", toAccount: "", amount: "", description: "", pin: "" }); }}
             className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
@@ -61,8 +103,11 @@ export default function PortalTransferPage() {
               <select required value={form.fromAccount} onChange={(e) => setForm({ ...form, fromAccount: e.target.value })}
                 className="w-full border border-slate-200 rounded-lg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Select account</option>
-                <option value="ACC-1001">ACC-1001 — Savings (KES 245,800)</option>
-                <option value="ACC-1007">ACC-1007 — Current (KES 82,400)</option>
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>
+                    ACC-00{acc.id} — {acc.type} (KES {acc.balance.toLocaleString()})
+                  </option>
+                ))}
               </select>
             </div>
             <div>

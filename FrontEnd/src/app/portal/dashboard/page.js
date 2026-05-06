@@ -1,23 +1,44 @@
+"use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-
-const accounts = [
-  { id: "ACC-1001", type: "Savings", balance: "KES 245,800.00", number: "**** 1001" },
-  { id: "ACC-1007", type: "Current", balance: "KES 82,400.00", number: "**** 1007" },
-];
-
-const recentTx = [
-  { id: "TXN-001", desc: "Salary Credit", amount: "+KES 85,000", date: "2025-07-10", type: "credit" },
-  { id: "TXN-002", desc: "Utility Bill Payment", amount: "-KES 4,200", date: "2025-07-09", type: "debit" },
-  { id: "TXN-003", desc: "Transfer to Brian Otieno", amount: "-KES 15,000", date: "2025-07-08", type: "debit" },
-  { id: "TXN-004", desc: "ATM Withdrawal", amount: "-KES 5,000", date: "2025-07-07", type: "debit" },
-  { id: "TXN-005", desc: "Interest Credit", amount: "+KES 1,240", date: "2025-07-06", type: "credit" },
-];
+import { authFetch } from "@/utils/api";
 
 export default function PortalDashboard() {
+  const [accounts, setAccounts] = useState([]);
+  const [recentTx, setRecentTx] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [userName, setUserName] = useState("Customer");
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user.name) setUserName(user.name);
+
+    async function fetchData() {
+      try {
+        const [accRes, txRes] = await Promise.all([
+          authFetch("http://localhost:8080/api/accounts"),
+          authFetch("http://localhost:8080/api/transactions")
+        ]);
+        const accData = await accRes.json();
+        const txData = await txRes.json();
+        setAccounts(accData);
+        setRecentTx(txData.slice(0, 5));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  if (loading) return <div className="p-8 text-center text-slate-500">Loading your overview...</div>;
+
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Good morning, Alice</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Good morning, {userName}</h1>
         <p className="text-slate-500 text-sm mt-1">Here&apos;s your financial overview for today.</p>
       </div>
 
@@ -28,8 +49,8 @@ export default function PortalDashboard() {
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-8 -translate-x-8" />
             <p className="text-blue-200 text-xs font-medium uppercase tracking-wide">{acc.type} Account</p>
-            <p className="text-3xl font-bold mt-2">{acc.balance}</p>
-            <p className="text-blue-300 text-sm mt-1">{acc.number}</p>
+            <p className="text-3xl font-bold mt-2">KES {acc.balance?.toLocaleString()}</p>
+            <p className="text-blue-300 text-sm mt-1">AC-00{acc.id}</p>
             <div className="flex gap-3 mt-5">
               <Link href="/portal/transfer"
                 className="bg-white/20 hover:bg-white/30 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors">
@@ -70,15 +91,17 @@ export default function PortalDashboard() {
           {recentTx.map((tx) => (
             <div key={tx.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm ${tx.type === "credit" ? "bg-green-100 text-green-600" : "bg-red-50 text-red-400"}`}>
-                  {tx.type === "credit" ? "↓" : "↑"}
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm ${tx.type === "Deposit" ? "bg-green-100 text-green-600" : "bg-red-50 text-red-400"}`}>
+                  {tx.type === "Deposit" ? "↓" : "↑"}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-700">{tx.desc}</p>
-                  <p className="text-xs text-slate-400">{tx.date}</p>
+                  <p className="text-sm font-medium text-slate-700">{tx.type} {tx.from_account ? `from AC-00${tx.from_account.id}` : `to AC-00${tx.to_account?.id}`}</p>
+                  <p className="text-xs text-slate-400">{tx.date || 'Just now'}</p>
                 </div>
               </div>
-              <span className={`text-sm font-semibold ${tx.type === "credit" ? "text-green-600" : "text-red-500"}`}>{tx.amount}</span>
+              <span className={`text-sm font-semibold ${tx.type === "Deposit" ? "text-green-600" : "text-red-500"}`}>
+                {tx.type === "Deposit" ? "+" : "-"}KES {tx.amount?.toLocaleString()}
+              </span>
             </div>
           ))}
         </div>

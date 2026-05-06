@@ -144,7 +144,7 @@ export default function Sidebar() {
           Navigation
         </div>
         {links.map(({ href, label, icon }) => {
-          const active = pathname === href;
+          const active = href === BASE ? pathname === BASE : pathname.startsWith(href);
           return (
             <Link key={href} href={href} style={{
               display: "flex",

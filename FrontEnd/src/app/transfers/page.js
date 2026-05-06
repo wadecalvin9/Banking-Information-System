@@ -1,20 +1,60 @@
 "use client";
-import { useState } from "react";
-
-const recentTransfers = [
-  { id: "TRF-001", from: "ACC-1001", to: "ACC-1003", amount: "KES 8,000", date: "2025-07-09", status: "Completed" },
-  { id: "TRF-002", from: "ACC-1001", to: "ACC-1006", amount: "KES 15,000", date: "2025-07-07", status: "Completed" },
-  { id: "TRF-003", from: "ACC-1002", to: "ACC-1004", amount: "KES 50,000", date: "2025-07-06", status: "Pending" },
-];
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function TransfersPage() {
   const [form, setForm] = useState({ fromAccount: "", toAccount: "", amount: "", description: "", pin: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const router = useRouter();
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [accRes, txRes] = await Promise.all([
+          fetch("http://localhost:8080/api/accounts"),
+          fetch("http://localhost:8080/api/transactions")
+        ]);
+        const accData = await accRes.json();
+        const txData = await txRes.json();
+        setAccounts(accData);
+        setTransactions(txData.filter(tx => tx.type === 'Transfer'));
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    try {
+      const res = await fetch("http://localhost:8080/api/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          from_account: Number(form.fromAccount),
+          to_account: Number(form.toAccount),
+          amount: Number(form.amount),
+          type: "Transfer"
+        })
+      });
+
+      if (res.ok) {
+        setSubmitted(true);
+        setTimeout(() => setSubmitted(false), 3000);
+        // Refresh transactions
+        const txRes = await fetch("http://localhost:8080/api/transactions");
+        const txData = await txRes.json();
+        setTransactions(txData.filter(tx => tx.type === 'Transfer'));
+      } else {
+        alert("Transfer failed");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error initiating transfer");
+    }
   };
 
   return (
@@ -44,9 +84,11 @@ export default function TransfersPage() {
                 className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select source account</option>
-                <option value="ACC-1001">ACC-1001 — Alice Mwangi (KES 245,800)</option>
-                <option value="ACC-1002">ACC-1002 — Brian Otieno (KES 1,200,000)</option>
-                <option value="ACC-1006">ACC-1006 — Frank Maina (KES 87,300)</option>
+                {accounts.map(acc => (
+                  <option key={acc.id} value={acc.id}>
+                    ACC-00{acc.id} — {acc.customer.name} (KES {acc.balance.toLocaleString()})
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -114,20 +156,24 @@ export default function TransfersPage() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h2 className="font-semibold text-slate-800 mb-5">Recent Transfers</h2>
           <div className="space-y-3">
-            {recentTransfers.map((t) => (
+            {transactions.length > 0 ? transactions.slice(0, 5).map((t) => (
               <div key={t.id} className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-100">
                 <div>
-                  <p className="text-sm font-medium text-slate-700 flex items-center gap-1.5">{t.from} <ArrowRightSVG /> {t.to}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{t.id} · {t.date}</p>
+                  <p className="text-sm font-medium text-slate-700 flex items-center gap-1.5">
+                    AC-00{t.from_account?.id} <ArrowRightSVG /> AC-00{t.to_account?.id}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">TX-00{t.id} · {t.date || 'Just now'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-slate-700">{t.amount}</p>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${t.status === "Completed" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                    {t.status}
+                  <p className="text-sm font-semibold text-slate-700">KES {t.amount?.toLocaleString()}</p>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700`}>
+                    Completed
                   </span>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-center text-slate-400 text-sm py-4">No recent transfers</p>
+            )}
           </div>
 
           <div className="mt-6 p-4 bg-blue-50 rounded-xl border border-blue-100">

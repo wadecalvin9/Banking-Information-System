@@ -4,15 +4,34 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Home() {
-  const [form, setForm] = useState({ accountNumber: "", password: "" });
+  const [form, setForm] = useState({ accountNumber: "", pin: "" });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 900));
-    router.push("/portal/dashboard");
+    setError("");
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify({ name: data.name, email: data.email }));
+        router.push("/portal/dashboard");
+      } else {
+        setError("Invalid Account Number or PIN.");
+      }
+    } catch (err) {
+      setError("Server connection failed. Is the backend running?");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -144,6 +163,21 @@ export default function Home() {
             </p>
           </div>
 
+          {error && (
+            <div style={{
+              marginBottom: 20,
+              padding: "12px 16px",
+              backgroundColor: "#fef2f2",
+              border: "1px solid #fee2e2",
+              borderRadius: 10,
+              color: "#dc2626",
+              fontSize: 13,
+              textAlign: "center"
+            }}>
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
             {/* Account Number */}
             <div>
@@ -180,17 +214,17 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Password */}
+            {/* PIN */}
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <label style={{
                   fontSize: 12, fontWeight: 600,
                   color: "#4b5675", letterSpacing: "0.04em", textTransform: "uppercase",
                 }}>
-                  Password
+                  Account PIN
                 </label>
                 <a href="#" style={{ fontSize: 12, color: "#1447e6", fontWeight: 500, textDecoration: "none" }}>
-                  Forgot password?
+                  Forgot PIN?
                 </a>
               </div>
               <div style={{ position: "relative" }}>
@@ -203,9 +237,10 @@ export default function Home() {
                 <input
                   type="password"
                   required
-                  placeholder="••••••••"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  maxLength={6}
+                  placeholder="••••••"
+                  value={form.pin}
+                  onChange={(e) => setForm({ ...form, pin: e.target.value })}
                   style={{
                     width: "100%", padding: "11px 14px 11px 40px",
                     border: "1.5px solid #e5e9f2",

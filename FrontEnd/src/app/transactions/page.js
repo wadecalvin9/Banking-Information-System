@@ -1,26 +1,10 @@
-const transactions = [
-  { id: "TXN-001", account: "ACC-1001", customer: "Alice Mwangi", type: "Deposit", amount: "+KES 45,000", date: "2025-07-10 09:14", status: "Completed", ref: "DEP20250710001" },
-  { id: "TXN-002", account: "ACC-1002", customer: "Brian Otieno", type: "Withdrawal", amount: "-KES 12,500", date: "2025-07-10 10:32", status: "Completed", ref: "WDR20250710002" },
-  { id: "TXN-003", account: "ACC-1003", customer: "Carol Njeri", type: "Transfer", amount: "-KES 8,000", date: "2025-07-09 14:05", status: "Pending", ref: "TRF20250709003" },
-  { id: "TXN-004", account: "ACC-1004", customer: "David Kamau", type: "Deposit", amount: "+KES 120,000", date: "2025-07-09 11:20", status: "Completed", ref: "DEP20250709004" },
-  { id: "TXN-005", account: "ACC-1005", customer: "Eve Wanjiku", type: "Withdrawal", amount: "-KES 3,200", date: "2025-07-08 16:45", status: "Failed", ref: "WDR20250708005" },
-  { id: "TXN-006", account: "ACC-1006", customer: "Frank Maina", type: "Deposit", amount: "+KES 60,000", date: "2025-07-08 08:00", status: "Completed", ref: "DEP20250708006" },
-  { id: "TXN-007", account: "ACC-1001", customer: "Alice Mwangi", type: "Transfer", amount: "-KES 15,000", date: "2025-07-07 13:10", status: "Completed", ref: "TRF20250707007" },
-];
+export default async function TransactionsPage() {
+  const res = await fetch("http://localhost:8080/api/transactions", { cache: 'no-store' });
+  const transactionsData = await res.json();
 
-const statusStyle = {
-  Completed: "bg-green-100 text-green-700",
-  Pending: "bg-amber-100 text-amber-700",
-  Failed: "bg-red-100 text-red-600",
-};
+  const statusStyle = { Completed: "bg-green-100 text-green-700", Pending: "bg-amber-100 text-amber-700", Failed: "bg-red-100 text-red-600" };
+  const typeStyle = { Deposit: "bg-green-50 text-green-600", Withdrawal: "bg-red-50 text-red-500", Transfer: "bg-blue-50 text-blue-600" };
 
-const typeStyle = {
-  Deposit: "bg-green-50 text-green-600",
-  Withdrawal: "bg-red-50 text-red-500",
-  Transfer: "bg-blue-50 text-blue-600",
-};
-
-export default function TransactionsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -69,19 +53,21 @@ export default function TransactionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {transactions.map((tx) => (
+              {transactionsData.map((tx) => (
                 <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-3.5 font-mono text-slate-500">{tx.id}</td>
-                  <td className="px-6 py-3.5 font-mono text-slate-400 text-xs">{tx.account}</td>
-                  <td className="px-6 py-3.5 font-medium text-slate-700">{tx.customer}</td>
+                  <td className="px-6 py-3.5 font-mono text-slate-500">TX-00{tx.id}</td>
+                  <td className="px-6 py-3.5 font-mono text-slate-400 text-xs">AC-00{tx.from_account?.id || tx.to_account?.id}</td>
+                  <td className="px-6 py-3.5 font-medium text-slate-700">{tx.from_account?.customer?.name || tx.to_account?.customer?.name || "-"}</td>
                   <td className="px-6 py-3.5">
                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${typeStyle[tx.type]}`}>{tx.type}</span>
                   </td>
-                  <td className={`px-6 py-3.5 font-semibold ${tx.amount.startsWith("+") ? "text-green-600" : "text-red-500"}`}>{tx.amount}</td>
-                  <td className="px-6 py-3.5 text-slate-400 text-xs">{tx.date}</td>
-                  <td className="px-6 py-3.5 font-mono text-slate-400 text-xs">{tx.ref}</td>
+                  <td className={`px-6 py-3.5 font-semibold ${tx.type === 'Deposit' ? "text-green-600" : "text-red-500"}`}>
+                    {tx.type === 'Deposit' ? "+" : "-"}KES {tx.amount?.toLocaleString()}
+                  </td>
+                  <td className="px-6 py-3.5 text-slate-400 text-xs">{tx.date || "Just now"}</td>
+                  <td className="px-6 py-3.5 font-mono text-slate-400 text-xs">REF-{tx.id}</td>
                   <td className="px-6 py-3.5">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle[tx.status]}`}>{tx.status}</span>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle['Completed']}`}>Completed</span>
                   </td>
                 </tr>
               ))}
