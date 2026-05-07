@@ -31,18 +31,20 @@ public class transactionController {
 
     @PostMapping("deposit")
     public Transactions deposit(@RequestBody transactionRequest request){
-        return service.deposit(request);
-
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return service.deposit(request, principal.toString());
     }
 
     @PostMapping("withdraw")
     public Transactions withdraw(@RequestBody transactionRequest request){
-        return service.withdraw(request);
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return service.withdraw(request, principal.toString());
     }
 
     @PostMapping("transfer")
     public Transactions transfer(@RequestBody transactionRequest request){
-        return service.Transfer(request);
+        Object principal = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return service.Transfer(request, principal.toString());
     }
 }
 

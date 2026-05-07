@@ -33,18 +33,30 @@ public class TransactionService {
         return repo.findByFromAccountCustomerEmailOrToAccountCustomerEmail(email);
     }
 
-    public Transactions deposit(@RequestBody transactionRequest request){
+    @Transactional
+    public Transactions deposit(transactionRequest request, String currentUserEmail){
         Accounts current_account = accRepo.findById(request.getTo_account()).orElseThrow(()-> new EntityNotFoundException("Account Not Found"));
-        Transactions transactions = new Transactions();
-        if (request.getAmount() <= 0){
-
-            throw new RuntimeException("Amount must be grater than zero");
+        
+        // Ensure account belongs to current user
+        if (!current_account.getCustomer().getEmail().equalsIgnoreCase(currentUserEmail)) {
+            throw new RuntimeException("Unauthorized: This account does not belong to you");
         }
-            current_account.setBalance(request.getAmount() + current_account.getBalance());
-            transactions.setTo_account(current_account);
-            transactions.setAmount(request.getAmount());
-            transactions.setType(request.getType());
-            return repo.save(transactions);
+
+        Transactions transactions = new Transactions();
+        // Verify PIN for deposit (optional but good for consistency in this app)
+        if (request.getPin() == null || request.getPin().isEmpty() || !passwordEncoder.matches(request.getPin(), current_account.getCustomer().getPin())) {
+            throw new RuntimeException("Invalid Transaction PIN");
+        }
+
+        if (request.getAmount() <= 0){
+            throw new RuntimeException("Amount must be greater than zero");
+        }
+        current_account.setBalance(request.getAmount() + current_account.getBalance());
+        accRepo.save(current_account);
+        transactions.setTo_account(current_account);
+        transactions.setAmount(request.getAmount());
+        transactions.setType(request.getType());
+        return repo.save(transactions);
 
 
 
@@ -52,34 +64,55 @@ public class TransactionService {
     }
 
 
-    public Transactions withdraw(@RequestBody transactionRequest request){
+    @Transactional
+    public Transactions withdraw(transactionRequest request, String currentUserEmail){
         Accounts current_account = accRepo.findById(request.getTo_account()).orElseThrow(()-> new EntityNotFoundException("Account Not Found"));
-        Transactions transactions = new Transactions();
-        if (request.getAmount() <= 0){
+        
+        // Ensure account belongs to current user
+        if (!current_account.getCustomer().getEmail().equalsIgnoreCase(currentUserEmail)) {
+            throw new RuntimeException("Unauthorized: This account does not belong to you");
+        }
 
+        Transactions transactions = new Transactions();
+        // Verify PIN for withdrawal
+        if (request.getPin() == null || request.getPin().isEmpty() || !passwordEncoder.matches(request.getPin(), current_account.getCustomer().getPin())) {
+            throw new RuntimeException("Invalid Transaction PIN");
+        }
+
+        if (request.getAmount() <= 0){
             throw new RuntimeException("Amount must be greater than zero");
         }
         if(current_account.getBalance() < request.getAmount()){
             throw  new RuntimeException("Insufficient amount");
         }else {
             current_account.setBalance(current_account.getBalance() - request.getAmount());
+            accRepo.save(current_account);
             transactions.setTo_account(current_account);
             transactions.setAmount(request.getAmount());
             transactions.setType(request.getType());
             return repo.save(transactions);
-
         }
 
     }
 
     @Transactional
-    public Transactions Transfer(@RequestBody transactionRequest request) {
+    public Transactions Transfer(transactionRequest request, String currentUserEmail) {
         if (request.getFrom_account() == null || request.getTo_account() == null) {
             throw new RuntimeException("Account IDs cannot be null");
         }
 
+        if (request.getFrom_account().equals(request.getTo_account())) {
+            throw new RuntimeException("You cannot transfer money to the same account");
+        }
+
         Accounts current_account = accRepo.findById(request.getFrom_account())
                 .orElseThrow(() -> new EntityNotFoundException("Source Account doesn't Exist"));
+        
+        // Ensure source account belongs to current user
+        if (!current_account.getCustomer().getEmail().equalsIgnoreCase(currentUserEmail)) {
+            throw new RuntimeException("Unauthorized: This account does not belong to you");
+        }
+
         Accounts other_account = accRepo.findById(request.getTo_account())
                 .orElseThrow(() -> new EntityNotFoundException("Destination Account does not Exist"));
 

@@ -19,8 +19,16 @@ public class transactionRequest {
         return to_account;
     }
 
+    public void setTo_account(Long to_account) {
+        this.to_account = to_account;
+    }
+
     public Long getFrom_account() {
         return from_account;
+    }
+
+    public void setFrom_account(Long from_account) {
+        this.from_account = from_account;
     }
 
     public String getType() {

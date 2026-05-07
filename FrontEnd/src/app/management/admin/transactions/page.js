@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { authFetch } from "@/utils/api";
 
 const statusStyle = { Completed: "bg-green-100 text-green-700", Pending: "bg-amber-100 text-amber-700", Failed: "bg-red-100 text-red-600" };
-const typeStyle = { Deposit: "bg-green-50 text-green-600", Withdrawal: "bg-red-50 text-red-500", Transfer: "bg-blue-50 text-blue-600" };
+const typeStyle = { Deposit: "bg-green-50 text-green-600", Withdrawal: "bg-red-50 text-red-500", Withdraw: "bg-red-50 text-red-500", Transfer: "bg-blue-50 text-blue-600" };
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
@@ -79,7 +79,7 @@ export default function TransactionsPage() {
           </table>
         </div>
         <div className="px-6 py-3 border-t border-slate-100 flex items-center justify-between text-sm text-slate-400">
-          <span>Showing 7 of 284 transactions</span>
+          <span>Showing {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}</span>
           <div className="flex gap-2">
             <button className="px-3 py-1.5 flex items-center gap-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600"><ArrowLeftSVG /> Prev</button>
             <button className="px-3 py-1.5 flex items-center gap-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">Next <ArrowRightSVG /></button>

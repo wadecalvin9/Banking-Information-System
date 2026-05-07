@@ -1,13 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { authFetch } from "@/utils/api";
+import Link from "next/link";
 
-export default function PortalTransferPage() {
-  const [form, setForm] = useState({ fromAccount: "", toAccount: "", amount: "", description: "", pin: "" });
+export default function DepositPage() {
+  const [form, setForm] = useState({ toAccount: "", amount: "", pin: "" });
   const [step, setStep] = useState(1); // 1=form, 2=confirm, 3=success
   const [accounts, setAccounts] = useState([]);
   const [txnId, setTxnId] = useState(null);
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -25,48 +25,34 @@ export default function PortalTransferPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-
     if (step === 1) {
-      const fromId = String(form.fromAccount).replace(/[^0-9]/g, "");
-      const toId = String(form.toAccount).replace(/[^0-9]/g, "");
-
-      // Block self-transfer before even going to the confirm step
-      if (fromId && toId && fromId === toId) {
-        setError("You cannot transfer money to the same account.");
-        return;
-      }
       setStep(2);
       return;
     }
-
     if (step === 2) {
       setLoading(true);
       try {
-        const fromId = String(form.fromAccount).replace(/[^0-9]/g, "");
-        const toId = String(form.toAccount).replace(/[^0-9]/g, "");
-
-        const res = await authFetch("http://localhost:8080/api/transfer", {
+        const res = await authFetch("http://localhost:8080/api/deposit", {
           method: "POST",
           body: JSON.stringify({
-            from_account: fromId ? Number(fromId) : null,
-            to_account: toId ? Number(toId) : null,
+            to_account: Number(form.toAccount),
             amount: Number(form.amount),
-            type: "Transfer",
-            pin: form.pin
+            type: "Deposit",
+            pin: form.pin // Included for future-proofing
           })
         });
+
         if (res.ok) {
           const data = await res.json();
           setTxnId(data.id);
           setStep(3);
         } else {
-          const msg = await res.text();
-          setError(msg || "Transfer failed. Please check your PIN and try again.");
+          const errorData = await res.text();
+          alert(errorData || "Deposit failed");
         }
       } catch (err) {
         console.error(err);
-        setError("Network error. Please try again.");
+        alert("Error initiating deposit");
       } finally {
         setLoading(false);
       }
@@ -79,17 +65,17 @@ export default function PortalTransferPage() {
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 mx-auto mb-4">
           <CheckCircleSVG />
         </div>
-        <h2 className="text-2xl font-bold text-slate-800">Transfer Successful!</h2>
-        <p className="text-slate-500 mt-2 text-sm">Your transfer of <span className="font-semibold text-slate-700">KES {form.amount}</span> has been initiated.</p>
-        <p className="text-xs text-slate-400 mt-1">Reference: TRF-00{txnId || 'PENDING'}</p>
+        <h2 className="text-2xl font-bold text-slate-800">Deposit Successful!</h2>
+        <p className="text-slate-500 mt-2 text-sm">Your deposit of <span className="font-semibold text-slate-700">KES {Number(form.amount).toLocaleString()}</span> has been processed.</p>
+        <p className="text-xs text-slate-400 mt-1">Reference: DEP-00{txnId || 'PENDING'}</p>
         <div className="flex gap-3 justify-center mt-8">
-          <button onClick={() => { setStep(1); setForm({ fromAccount: "", toAccount: "", amount: "", description: "", pin: "" }); }}
+          <button onClick={() => { setStep(1); setForm({ toAccount: "", amount: "", pin: "" }); }}
             className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
-            New Transfer
+            New Deposit
           </button>
-          <a href="/portal/transactions" className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors">
+          <Link href="/portal/transactions" className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition-colors">
             View History
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -98,13 +84,13 @@ export default function PortalTransferPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Transfer Funds</h1>
-        <p className="text-slate-500 text-sm mt-1">Send money to any NexaBank account</p>
+        <h1 className="text-2xl font-bold text-slate-800">Deposit Funds</h1>
+        <p className="text-slate-500 text-sm mt-1">Add money to your NexaBank account</p>
       </div>
 
       {/* Steps */}
       <div className="flex items-center gap-2">
-        {["Transfer Details", "Confirm"].map((label, i) => (
+        {["Deposit Details", "Confirm"].map((label, i) => (
           <div key={label} className="flex items-center gap-2">
             <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step > i + 1 ? "bg-green-500 text-white" : step === i + 1 ? "bg-blue-600 text-white" : "bg-slate-200 text-slate-400"}`}>
               {step > i + 1 ? <CheckSVG /> : i + 1}
@@ -116,20 +102,11 @@ export default function PortalTransferPage() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-        {/* Error banner */}
-        {error && (
-          <div className="mb-4 flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-            <svg className="shrink-0 mt-0.5" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span>{error}</span>
-          </div>
-        )}
         {step === 1 && (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">From Account</label>
-              <select required value={form.fromAccount} onChange={(e) => setForm({ ...form, fromAccount: e.target.value })}
+              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">Target Account</label>
+              <select required value={form.toAccount} onChange={(e) => setForm({ ...form, toAccount: e.target.value })}
                 className="w-full border border-slate-200 rounded-lg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="">Select account</option>
                 {accounts.map(acc => (
@@ -140,25 +117,13 @@ export default function PortalTransferPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">To Account Number</label>
-              <input type="text" required placeholder="Enter recipient account number" value={form.toAccount}
-                onChange={(e) => setForm({ ...form, toAccount: e.target.value })}
-                className="w-full border border-slate-200 rounded-lg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">Amount (KES)</label>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">Amount to Deposit (KES)</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">KES</span>
                 <input type="number" required min="1" placeholder="0.00" value={form.amount}
                   onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   className="w-full border border-slate-200 rounded-lg pl-12 pr-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
               </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">Description (optional)</label>
-              <input type="text" placeholder="e.g. Rent, School fees..." value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="w-full border border-slate-200 rounded-lg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <button type="submit" className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors text-sm">
               Continue <ArrowRightSVG />
@@ -168,12 +133,10 @@ export default function PortalTransferPage() {
 
         {step === 2 && (
           <form onSubmit={handleSubmit} className="space-y-5">
-            <h3 className="font-semibold text-slate-800">Confirm Transfer</h3>
+            <h3 className="font-semibold text-slate-800">Confirm Deposit</h3>
             <div className="bg-slate-50 rounded-xl p-4 space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-slate-500">From</span><span className="font-medium text-slate-700">{form.fromAccount}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">To</span><span className="font-medium text-slate-700">{form.toAccount}</span></div>
-              <div className="flex justify-between"><span className="text-slate-500">Amount</span><span className="font-bold text-slate-800">KES {form.amount}</span></div>
-              {form.description && <div className="flex justify-between"><span className="text-slate-500">Description</span><span className="text-slate-700">{form.description}</span></div>}
+              <div className="flex justify-between"><span className="text-slate-500">To Account</span><span className="font-medium text-slate-700">ACC-00{form.toAccount}</span></div>
+              <div className="flex justify-between"><span className="text-slate-500">Amount</span><span className="font-bold text-slate-800">KES {Number(form.amount).toLocaleString()}</span></div>
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">Enter PIN to Confirm</label>
@@ -182,21 +145,17 @@ export default function PortalTransferPage() {
                 className="w-full border border-slate-200 rounded-lg px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div className="flex gap-3">
-              <button type="button" onClick={() => { setStep(1); setError(""); }}
+              <button type="button" onClick={() => setStep(1)} disabled={loading}
                 className="flex-1 flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 rounded-lg transition-colors text-sm">
                 <ArrowLeftSVG /> Back
               </button>
               <button type="submit" disabled={loading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 rounded-lg transition-colors text-sm">
-                {loading ? "Processing..." : "Confirm Transfer"}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors text-sm disabled:bg-blue-400">
+                {loading ? "Processing..." : "Confirm Deposit"}
               </button>
             </div>
           </form>
         )}
-      </div>
-
-      <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-xs text-amber-700">
-        <span className="font-semibold">Daily limit:</span> KES 500,000 &nbsp;·&nbsp; <span className="font-semibold">Used today:</span> KES 15,000 &nbsp;·&nbsp; <span className="font-semibold">Remaining:</span> KES 485,000
       </div>
     </div>
   );

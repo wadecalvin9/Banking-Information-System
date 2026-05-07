@@ -68,14 +68,14 @@ export default function PortalDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: "Send Money", icon: <SendSVG />, href: "/portal/transfer" },
-          { label: "My Accounts", icon: <LandmarkSVG />, href: "/portal/accounts" },
-          { label: "Transactions", icon: <ArrowsSVG />, href: "/portal/transactions" },
-          { label: "Profile", icon: <UserSVG />, href: "/portal/profile" },
+          { label: "Deposit", icon: <ArrowDownCircleSVG />, href: "/portal/deposit", color: "text-green-600", bg: "bg-green-50" },
+          { label: "Withdraw", icon: <ArrowUpCircleSVG />, href: "/portal/withdraw", color: "text-red-500", bg: "bg-red-50" },
+          { label: "Transfer", icon: <SendSVG />, href: "/portal/transfer", color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Transactions", icon: <ArrowsSVG />, href: "/portal/transactions", color: "text-slate-600", bg: "bg-slate-100" },
         ].map((a) => (
           <Link key={a.label} href={a.href}
             className="bg-white rounded-xl p-4 flex flex-col items-center gap-2 shadow-sm border border-slate-100 hover:shadow-md hover:border-blue-100 transition-all">
-            <span className="text-blue-600 flex items-center justify-center">{a.icon}</span>
+            <span className={`w-10 h-10 rounded-full ${a.bg} ${a.color} flex items-center justify-center`}>{a.icon}</span>
             <span className="text-xs font-medium text-slate-600">{a.label}</span>
           </Link>
         ))}
@@ -88,22 +88,33 @@ export default function PortalDashboard() {
           <Link href="/portal/transactions" className="text-sm text-blue-600 hover:underline">View all</Link>
         </div>
         <div className="divide-y divide-slate-50">
-          {recentTx.map((tx) => (
-            <div key={tx.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm ${tx.type === "Deposit" ? "bg-green-100 text-green-600" : "bg-red-50 text-red-400"}`}>
-                  {tx.type === "Deposit" ? "↓" : "↑"}
+          {recentTx.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 text-sm italic">No recent transactions</div>
+          ) : (
+            recentTx.map((tx) => {
+              const myAccountIds = accounts.map(a => a.id);
+              const isIncoming = tx.type === "Deposit" || (tx.type === "Transfer" && tx.to_account && myAccountIds.includes(tx.to_account.id));
+              
+              return (
+                <div key={tx.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm ${isIncoming ? "bg-green-100 text-green-600" : "bg-red-50 text-red-400"}`}>
+                      {isIncoming ? "↓" : "↑"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-700">
+                        {tx.type} {isIncoming ? (tx.from_account ? `from AC-00${tx.from_account.id}` : "") : (tx.to_account ? `to AC-00${tx.to_account.id}` : "")}
+                      </p>
+                      <p className="text-xs text-slate-400">{tx.date || 'Just now'}</p>
+                    </div>
+                  </div>
+                  <span className={`text-sm font-semibold ${isIncoming ? "text-green-600" : "text-red-500"}`}>
+                    {isIncoming ? "+" : "-"}KES {tx.amount?.toLocaleString()}
+                  </span>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-700">{tx.type} {tx.from_account ? `from AC-00${tx.from_account.id}` : `to AC-00${tx.to_account?.id}`}</p>
-                  <p className="text-xs text-slate-400">{tx.date || 'Just now'}</p>
-                </div>
-              </div>
-              <span className={`text-sm font-semibold ${tx.type === "Deposit" ? "text-green-600" : "text-red-500"}`}>
-                {tx.type === "Deposit" ? "+" : "-"}KES {tx.amount?.toLocaleString()}
-              </span>
-            </div>
-          ))}
+              );
+            })
+          )}
         </div>
       </div>
     </div>
@@ -111,6 +122,25 @@ export default function PortalDashboard() {
 }
 
 /* ── Inline SVG icons ── */
+function ArrowDownCircleSVG() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="8 12 12 16 16 12" />
+      <line x1="12" y1="8" x2="12" y2="16" />
+    </svg>
+  );
+}
+function ArrowUpCircleSVG() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="16 12 12 8 8 12" />
+      <line x1="12" y1="16" x2="12" y2="8" />
+    </svg>
+  );
+}
+
 function SendSVG() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

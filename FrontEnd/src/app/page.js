@@ -106,7 +106,7 @@ export default function Home() {
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}>
-              beautifully managed.
+              Securely managed.
             </span>
           </h1>
           <p style={{
@@ -122,7 +122,7 @@ export default function Home() {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 36 }}>
             {[
               { icon: <ShieldSVG />, label: "256-bit SSL" },
-              { icon: <ZapSVG />,    label: "Instant transfers" },
+              { icon: <ZapSVG />, label: "Instant transfers" },
               { icon: <ClockSVG />, label: "24/7 access" },
             ].map(({ icon, label }) => (
               <div key={label} style={{
