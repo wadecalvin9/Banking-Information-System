@@ -56,7 +56,7 @@ public class authController {
             if (passwordEncoder.matches(inputPin, admin.getPin())) {
                 String token = jwtUtils.generateToken(admin.getUsername());
                 System.out.println("Admin login successful for: " + admin.getUsername());
-                return ResponseEntity.ok(new loginResponse(token, admin.getName(), admin.getEmail()));
+                return ResponseEntity.ok(new loginResponse(token, admin.getName(), admin.getEmail(), "ADMIN"));
             }
         }
 
@@ -70,9 +70,14 @@ public class authController {
         if (accountOpt.isPresent()) {
             Customer customer = accountOpt.get().getCustomer();
             if (passwordEncoder.matches(request.getPin(), customer.getPin())) {
+                // Prevent login if rejected
+                if ("Rejected".equalsIgnoreCase(customer.getStatus())) {
+                    return ResponseEntity.status(403).body("Access Denied: Your account has been rejected. Please contact support.");
+                }
+                
                 String token = jwtUtils.generateToken(customer.getEmail());
                 System.out.println("Generated token for " + customer.getEmail() + ": " + token);
-                return ResponseEntity.ok(new loginResponse(token, customer.getName(), customer.getEmail()));
+                return ResponseEntity.ok(new loginResponse(token, customer.getName(), customer.getEmail(), "CUSTOMER"));
             }
         }
 

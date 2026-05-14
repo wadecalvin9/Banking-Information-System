@@ -8,6 +8,9 @@ const typeStyle = { Deposit: "bg-green-50 text-green-600", Withdrawal: "bg-red-5
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [dateFilter, setDateFilter] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -24,7 +27,50 @@ export default function TransactionsPage() {
     fetchData();
   }, []);
 
-  if (loading) return <div className="p-8 text-center text-slate-500">Loading transactions...</div>;
+  const filteredTransactions = transactions.filter((tx) => {
+    const fromName = tx.from_account?.customer?.name?.toLowerCase() || "";
+    const toName = tx.to_account?.customer?.name?.toLowerCase() || "";
+    const txId = `TX-00${tx.id}`.toLowerCase();
+    
+    const matchesSearch = fromName.includes(search.toLowerCase()) || 
+                         toName.includes(search.toLowerCase()) ||
+                         txId.includes(search.toLowerCase());
+                         
+    const matchesType = typeFilter === "All" || tx.type === typeFilter;
+    
+    const matchesDate = !dateFilter || (tx.date && tx.date.startsWith(dateFilter));
+    
+    return matchesSearch && matchesType && matchesDate;
+  });
+
+  const exportToCSV = () => {
+    const headers = ["TXN ID", "From Account", "From Customer", "To Account", "To Customer", "Type", "Amount", "Date"];
+    
+    const csvRows = filteredTransactions.map(tx => {
+      return [
+        `TX-00${tx.id}`,
+        `AC-00${tx.from_account?.id || "N/A"}`,
+        `"${tx.from_account?.customer?.name || "-"}"`,
+        `AC-00${tx.to_account?.id || "N/A"}`,
+        `"${tx.to_account?.customer?.name || "-"}"`,
+        tx.type,
+        tx.amount,
+        `"${tx.date || ""}"`
+      ].join(",");
+    });
+    
+    const csvContent = [headers.join(","), ...csvRows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `transactions_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  if (loading && transactions.length === 0) return <div className="p-8 text-center text-slate-500">Loading transactions...</div>;
 
   return (
     <div className="space-y-6">
@@ -33,16 +79,34 @@ export default function TransactionsPage() {
           <h1 className="text-2xl font-bold text-slate-800">Transactions</h1>
           <p className="text-slate-500 text-sm mt-1">Full transaction history and audit trail</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">Export CSV</button>
+        <button onClick={exportToCSV} className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">Export CSV</button>
       </div>
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-3">
-          <input type="text" placeholder="Search by ID, customer, ref..." className="flex-1 min-w-48 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-          <select className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <option>All Types</option><option>Deposit</option><option>Withdrawal</option><option>Transfer</option>
+          <input 
+            type="text" 
+            placeholder="Search by ID or customer..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 min-w-48 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" 
+          />
+          <select 
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="All">All Types</option>
+            <option value="Deposit">Deposit</option>
+            <option value="Withdrawal">Withdrawal</option>
+            <option value="Transfer">Transfer</option>
           </select>
 
-          <input type="date" className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          <input 
+            type="date" 
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -57,7 +121,7 @@ export default function TransactionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {transactions.map((tx) => (
+              {filteredTransactions.map((tx) => (
                 <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-6 py-3.5 font-mono text-slate-500 whitespace-nowrap">TX-00{tx.id}</td>
                   <td className="px-6 py-3.5 whitespace-nowrap">
@@ -75,11 +139,16 @@ export default function TransactionsPage() {
                   <td className="px-6 py-3.5 text-slate-400 text-xs whitespace-nowrap">{tx.date || "Just now"}</td>
                 </tr>
               ))}
+              {filteredTransactions.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-6 py-10 text-center text-slate-400">No transactions found.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
         <div className="px-6 py-3 border-t border-slate-100 flex items-center justify-between text-sm text-slate-400">
-          <span>Showing {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}</span>
+          <span>Showing {filteredTransactions.length} transaction{filteredTransactions.length !== 1 ? 's' : ''}</span>
           <div className="flex gap-2">
             <button className="px-3 py-1.5 flex items-center gap-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600"><ArrowLeftSVG /> Prev</button>
             <button className="px-3 py-1.5 flex items-center gap-1.5 rounded border border-slate-200 hover:bg-slate-50 text-slate-600">Next <ArrowRightSVG /></button>

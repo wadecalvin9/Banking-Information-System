@@ -64,8 +64,14 @@ export default function PortalNav() {
   const [user, setUser] = useState({ name: "User", email: "" });
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    if (storedUser.name) setUser(storedUser);
+    const handleUpdate = () => {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (storedUser.name) setUser(storedUser);
+    };
+
+    handleUpdate();
+    window.addEventListener("userUpdate", handleUpdate);
+    return () => window.removeEventListener("userUpdate", handleUpdate);
   }, []);
 
   return (
@@ -127,14 +133,22 @@ export default function PortalNav() {
             <p className="text-[13px] font-semibold text-[#0f1729] leading-tight">{user.name}</p>
             <p className="text-[11px] text-[#9aa3b5]">{user.email}</p>
           </div>
-          <Link href="/" className="ml-1 sm:ml-2 flex items-center p-2 sm:px-2.5 sm:py-1.5 rounded-lg text-[#9aa3b5] border border-[#e5e9f2] gap-1.5 transition-all hover:bg-slate-50" title="Sign out">
+          <button 
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              window.location.href = "/";
+            }}
+            className="ml-1 sm:ml-2 flex items-center p-2 sm:px-2.5 sm:py-1.5 rounded-lg text-[#9aa3b5] border border-[#e5e9f2] gap-1.5 transition-all hover:bg-slate-50" 
+            title="Sign out"
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
             <span className="hidden sm:inline text-xs">Sign out</span>
-          </Link>
+          </button>
         </div>
       </div>
     </header>

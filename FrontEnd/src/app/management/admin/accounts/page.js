@@ -53,7 +53,7 @@ export default function AccountsPage() {
             <thead>
               <tr className="text-left text-xs text-slate-400 uppercase tracking-wide bg-slate-50">
                 <th className="px-6 py-3">Account ID</th><th className="px-6 py-3">Owner</th><th className="px-6 py-3">Type</th>
-                <th className="px-6 py-3">Balance</th><th className="px-6 py-3">Opened</th><th className="px-6 py-3">Status</th><th className="px-6 py-3">Actions</th>
+                <th className="px-6 py-3">Balance</th><th className="px-6 py-3">Opened</th><th className="px-6 py-3">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -65,10 +65,6 @@ export default function AccountsPage() {
                   <td className="px-6 py-3.5 font-semibold text-slate-700 whitespace-nowrap">KSH {acc.balance}</td>
                   <td className="px-6 py-3.5 text-slate-400 whitespace-nowrap">{acc.opened}</td>
                   <td className="px-6 py-3.5 whitespace-nowrap"><span className={`px-2.5 py-1 rounded-full text-xs font-medium ${statusStyle[acc.status]}`}>{acc.status}</span></td>
-                  <td className="px-6 py-3.5 whitespace-nowrap">
-                    <button className="text-blue-600 hover:underline text-xs mr-3">View</button>
-                    <button className="text-slate-400 hover:text-red-500 text-xs">Suspend</button>
-                  </td>
                 </tr>
               ))}
             </tbody>

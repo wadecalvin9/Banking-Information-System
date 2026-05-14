@@ -184,13 +184,29 @@ export default function Sidebar() {
             <div style={{ fontSize: 12.5, fontWeight: 600, color: "#c8d8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>System Admin</div>
             <div style={{ fontSize: 11, color: "#3d5a80" }}>admin@nexabank.com</div>
           </div>
-          <Link href="/" title="Sign out" style={{ color: "#2d4a6a", display: "flex", transition: "color 0.15s" }}>
+          <button 
+            onClick={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              window.location.href = "/management/login";
+            }}
+            title="Sign out" 
+            style={{ 
+              color: "#2d4a6a", 
+              display: "flex", 
+              transition: "color 0.15s",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0
+            }}
+          >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
               <polyline points="16 17 21 12 16 7" />
               <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
-          </Link>
+          </button>
         </div>
       </aside>
     </>

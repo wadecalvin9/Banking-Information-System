@@ -42,6 +42,12 @@ public class TransactionService {
             throw new RuntimeException("Unauthorized: This account does not belong to you");
         }
 
+        // KYC Status Check
+        String status = current_account.getCustomer().getStatus();
+        if ("Rejected".equalsIgnoreCase(status)) {
+            throw new RuntimeException("Account Blocked: Your KYC was rejected. Please contact support.");
+        }
+
         Transactions transactions = new Transactions();
         // Verify PIN for deposit (optional but good for consistency in this app)
         if (request.getPin() == null || request.getPin().isEmpty() || !passwordEncoder.matches(request.getPin(), current_account.getCustomer().getPin())) {
@@ -71,6 +77,13 @@ public class TransactionService {
         // Ensure account belongs to current user
         if (!current_account.getCustomer().getEmail().equalsIgnoreCase(currentUserEmail)) {
             throw new RuntimeException("Unauthorized: This account does not belong to you");
+        }
+
+        // KYC Status Check for Withdrawal
+        String status = current_account.getCustomer().getStatus();
+        if (!"Verified".equalsIgnoreCase(status)) {
+            String msg = "Rejected".equalsIgnoreCase(status) ? "Account Blocked." : "KYC Pending: Please wait for admin verification.";
+            throw new RuntimeException("Access Denied: " + msg);
         }
 
         Transactions transactions = new Transactions();
@@ -111,6 +124,13 @@ public class TransactionService {
         // Ensure source account belongs to current user
         if (!current_account.getCustomer().getEmail().equalsIgnoreCase(currentUserEmail)) {
             throw new RuntimeException("Unauthorized: This account does not belong to you");
+        }
+
+        // KYC Status Check for Transfer
+        String status = current_account.getCustomer().getStatus();
+        if (!"Verified".equalsIgnoreCase(status)) {
+            String msg = "Rejected".equalsIgnoreCase(status) ? "Account Blocked." : "KYC Pending: Please wait for admin verification.";
+            throw new RuntimeException("Access Denied: " + msg);
         }
 
         Accounts other_account = accRepo.findById(request.getTo_account())

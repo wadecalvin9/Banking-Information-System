@@ -31,7 +31,10 @@ public class security {
                .authorizeHttpRequests(auth-> auth
                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                        .requestMatchers("/api/auth/**").permitAll()
-                       .requestMatchers("/api/customers").permitAll()
+                       .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/customers").permitAll() // Allow registration
+                       .requestMatchers("/api/profile").authenticated() // Require auth for profile
+                       .requestMatchers("/api/customers/**").authenticated() // Require auth for admin actions
+                       .requestMatchers("/api/customers").authenticated() // Require auth for listing
                        .anyRequest().authenticated()
                )
                .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))

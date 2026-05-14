@@ -22,8 +22,14 @@ export default function Home() {
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify({ name: data.name, email: data.email }));
-        router.push("/portal/dashboard");
+        localStorage.setItem("user", JSON.stringify({ name: data.name, email: data.email, role: data.role }));
+        
+        // Redirect based on role
+        if (data.role === "ADMIN") {
+          router.push("/management/admin");
+        } else {
+          router.push("/portal/dashboard");
+        }
       } else {
         setError("Invalid Account Number or PIN.");
       }
